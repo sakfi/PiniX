@@ -31,7 +31,22 @@ jobs:
         $DOWNLOAD_URL = (Invoke-RestMethod -Uri "https://api.github.com/repos/shinchiro/mpv-winbuild-cmake/releases/latest").assets | Where-Object { $_.name -match "mpv-dev-x86_64-v3" } | Select-Object -ExpandProperty browser_download_url
         Write-Host "Downloading mpv from $DOWNLOAD_URL"
         Invoke-WebRequest -Uri $DOWNLOAD_URL -OutFile "mpv-dev.7z"
-        7z e mpv-dev.7z mpv-2.dll -r
+        
+        Write-Host "Extracting all DLLs from the archive..."
+        7z e mpv-dev.7z *.dll -r -y
+        
+        Write-Host "Listing extracted DLLs:"
+        Get-ChildItem -Filter *.dll | Select-Object Name
+        
+        # python-mpv expects 'mpv-2.dll' or 'mpv-1.dll'. Shinchiro's recent builds name it 'libmpv-2.dll'.
+        if (Test-Path "libmpv-2.dll") { 
+            Write-Host "Renaming libmpv-2.dll to mpv-2.dll"
+            Rename-Item "libmpv-2.dll" "mpv-2.dll" 
+        }
+        if (-Not (Test-Path "mpv-2.dll")) {
+            Write-Error "mpv-2.dll was not found or created!"
+            exit 1
+        }
     - name: Build with PyInstaller
       run: |
         pyinstaller pinix.spec

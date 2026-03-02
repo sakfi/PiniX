@@ -66,22 +66,22 @@ class MainWindow(QMainWindow):
         self.stack = QStackedWidget()
         main_layout.addWidget(self.stack, stretch=1)
 
-        #   Page 0: Player + Channels Grid
+        #   Page 0: Player + Channels List (Split View)
         self.page_live_tv = QWidget()
         self.page_live_tv_layout = QVBoxLayout(self.page_live_tv)
         
         self.player_widget = PlayerWidget(self)
-        self.player_widget.setMinimumHeight(400)
+        self.player_widget.setMinimumHeight(450)
         self.page_live_tv_layout.addWidget(self.player_widget)
 
-        self.channels_label = QLabel("Channels Loading...")
-        self.page_live_tv_layout.addWidget(self.channels_label)
+        self.channels_list = QListWidget()
+        self.page_live_tv_layout.addWidget(self.channels_list)
 
         self.stack.addWidget(self.page_live_tv)
-        #   Other pages can be added for VOD and settings...
 
         # Connect signals
         self.sidebar.currentRowChanged.connect(self.on_sidebar_changed)
+        self.channels_list.itemDoubleClicked.connect(self.on_channel_selected)
 
         # Load Providers
         self.load_providers()
@@ -92,27 +92,33 @@ class MainWindow(QMainWindow):
     def load_providers(self):
         providers_list = self.settings.get_strv("providers")
         if providers_list:
-            # We'll just load the first one for demonstration
-            # "Free-TV:::url:::https://raw.githubusercontent.com/Free-TV/IPTV/master/playlist.m3u8::::::"
             p = providers_list[0]
             if ":::" in p:
                 provider = Provider(None, p)
-                self.channels_label.setText(f"Loading {provider.name}...")
+                self.channels_list.addItem(f"Loading {provider.name}...")
                 
-                # Fetch playlist (this blocks in PyQt, but ok for a quick init test)
+                # Fetch playlist (blocking for simplicity right now)
                 if self.manager.get_playlist(provider):
                     print("Playlist downloaded/cached.")
                     self.manager.check_playlist(provider)
                     self.manager.load_channels(provider)
-                    self.channels_label.setText(f"Loaded {len(provider.channels)} channels.")
                     
-                    # Play the first channel
-                    if provider.channels:
-                        first_channel = provider.channels[0]
-                        print("Playing", first_channel.name, first_channel.url)
-                        self.player_widget.play(first_channel.url)
+                    self.channels_list.clear() # clear loading message
+                    
+                    for channel in provider.channels:
+                        # Storing URL in toolTip hack for quick retrieval
+                        item = self.channels_list.addItem(channel.name or "Unknown Channel")
+                        self.channels_list.item(self.channels_list.count()-1).setToolTip(channel.url)
+                        
                 else:
-                    self.channels_label.setText("Failed to download playlist.")
+                    self.channels_list.clear()
+                    self.channels_list.addItem("Failed to download playlist.")
+
+    def on_channel_selected(self, item):
+        url = item.toolTip()
+        if url:
+             print("Playing:", url)
+             self.player_widget.play(url)
 
 
 if __name__ == '__main__':

@@ -100,6 +100,8 @@ class Channel:
         self.group_title = None
         self.title = None
         self.url = None
+        self.epg_id = None
+        
         match = EXTINF.fullmatch(info)
         if match is not None:
             res = match.groupdict()
@@ -111,6 +113,8 @@ class Channel:
                     self.logo = params['tvg-logo'].strip()
                 if "group-title" in params and params['group-title'].strip() != "":
                     self.group_title = params['group-title'].strip().replace(";", " ").replace("  ", " ")
+                if "tvg-id" in params and params['tvg-id'].strip() != "":
+                    self.epg_id = params['tvg-id'].strip()
             if 'title' in res:
                 self.title = res['title']
         if self.name is None and "," in info:

@@ -3,7 +3,8 @@ import os
 from PyQt6.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout, 
                              QHBoxLayout, QListWidget, QLabel, QStackedWidget,
                              QPushButton, QGridLayout, QScrollArea, QLineEdit,
-                             QInputDialog, QMessageBox, QMenu)
+                             QInputDialog, QMessageBox, QMenu, QComboBox, QToolButton)
+from PyQt6.QtGui import QAction
 from PyQt6.QtCore import Qt
 
 from pinix.settings import Settings
@@ -118,9 +119,24 @@ class MainWindow(QMainWindow):
         self.player_widget.setMinimumHeight(450)
         self.page_live_tv_layout.addWidget(self.player_widget)
 
-        self.search_bar = QLineEdit()
-        self.search_bar.setPlaceholderText("Search channels...")
-        self.page_live_tv_layout.addWidget(self.search_bar)
+        search_layout = QHBoxLayout()
+        self.search_bar = QComboBox()
+        self.search_bar.setEditable(True)
+        self.search_bar.lineEdit().setPlaceholderText("Search channels...")
+        search_layout.addWidget(self.search_bar, stretch=1)
+        
+        self.btn_sort = QToolButton()
+        self.btn_sort.setText("Sort ▼")
+        self.btn_sort.setPopupMode(QToolButton.ToolButtonPopupMode.InstantPopup)
+        sort_menu = QMenu(self)
+        self.action_sort_az = QAction("A-Z", self)
+        self.action_sort_za = QAction("Z-A", self)
+        self.action_sort_disable = QAction("Default Order", self)
+        sort_menu.addActions([self.action_sort_az, self.action_sort_za, self.action_sort_disable])
+        self.btn_sort.setMenu(sort_menu)
+        search_layout.addWidget(self.btn_sort)
+        
+        self.page_live_tv_layout.addLayout(search_layout)
 
         self.channels_list = QListWidget()
         self.page_live_tv_layout.addWidget(self.channels_list)
@@ -154,11 +170,16 @@ class MainWindow(QMainWindow):
         # Connect signals
         self.sidebar.currentRowChanged.connect(self.on_sidebar_changed)
         self.channels_list.itemDoubleClicked.connect(self.on_channel_selected)
-        self.search_bar.textChanged.connect(self.filter_channels)
+        self.search_bar.currentTextChanged.connect(self.filter_channels)
+        self.search_bar.lineEdit().returnPressed.connect(self.save_search_history)
+        self.action_sort_az.triggered.connect(lambda: self.sort_channels(Qt.SortOrder.AscendingOrder))
+        self.action_sort_za.triggered.connect(lambda: self.sort_channels(Qt.SortOrder.DescendingOrder))
+        self.action_sort_disable.triggered.connect(self.disable_sorting)
         self.btn_add_provider.clicked.connect(self.add_provider)
         self.btn_remove_provider.clicked.connect(self.remove_provider)
 
-        # Load Providers
+        # Load Initialization Data
+        self.load_search_history()
         self.load_providers()
 
     def on_sidebar_changed(self, index):
@@ -294,6 +315,47 @@ class MainWindow(QMainWindow):
             item = self.channels_list.item(i)
             # Case-insensitive substring match
             item.setHidden(search_text not in item.text().lower())
+
+    def save_search_history(self):
+        text = self.search_bar.currentText().strip()
+        if not text: return
+        history = self.settings.get_strv("search_history")
+        if text in history:
+            history.remove(text)
+        history.insert(0, text) # Keep newest at the top
+        # Limit to 10 items
+        history = history[:10]
+        self.settings.set_strv("search_history", history)
+        
+        # Refresh combo box silently
+        self.search_bar.blockSignals(True)
+        self.search_bar.clear()
+        self.search_bar.addItems(history)
+        self.search_bar.setCurrentText(text)
+        self.search_bar.blockSignals(False)
+
+    def load_search_history(self):
+        self.search_bar.blockSignals(True)
+        history = self.settings.get_strv("search_history")
+        self.search_bar.addItems(history)
+        self.search_bar.setCurrentIndex(-1)
+        self.search_bar.blockSignals(False)
+
+    def sort_channels(self, order):
+        self.channels_list.setSortingEnabled(True)
+        self.channels_list.sortItems(order)
+
+    def disable_sorting(self):
+        self.channels_list.setSortingEnabled(False)
+        # Reload current view to restore original M3U array order
+        text = ""
+        if self.sidebar.currentItem():
+            text = self.sidebar.currentItem().text()
+            
+        if text == "Favorites":
+            self.load_favorites_ui()
+        else:
+            self.load_providers()
 
 
 if __name__ == '__main__':

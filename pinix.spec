@@ -39,5 +39,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon=['pinix/assets/generic_tv_logo.png']
+    icon=None
 )

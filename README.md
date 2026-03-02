@@ -1,7 +1,7 @@
 # PiniX
 
 <p align="center">
-  <img src="pinix/PiniX.png" alt="PiniX Logo"  />
+  <img src="" alt="PiniX Logo"  />
 </p>
 
 ## About PiniX

@@ -1,51 +1,25 @@
-# Hypnotix
-![build](https://github.com/linuxmint/hypnotix/actions/workflows/build.yml/badge.svg)
+# PiniX
 
-Hypnotix is an IPTV streaming application with support for live TV, movies and series.
+PiniX is a Windows native IPTV streaming application with support for live TV, movies, and series, utilizing PyQt6 and mpv. 
+It is a Windows port and spiritual successor to the Hypnotix project originally built by the Linux Mint team.
 
-![shadow](https://user-images.githubusercontent.com/1138515/99553152-b8bac780-29b5-11eb-9d75-8756ed7581b6.png)
+## Features
+- Support for multiple IPTV providers:
+  - M3U URL
+  - Xtream API
+  - Local M3U playlist
 
-It can support multiple IPTV providers of the following types:
+## Installation
+Ensure you have Python 3.9+ installed and pip available.
+Install requirements via:
+```sh
+pip install -r requirements.txt
+```
 
-- M3U URL
-- Xtream API
-- Local M3U playlist
+Run the application:
+```sh
+python main.py
+```
 
-# License
-
-- Code: GPLv3
-- Flags: https://github.com/linuxmint/flags
-- Icons on the landing page: CC BY-ND 2.0
-
-# Requirements
-
-- libxapp 2.6+
-- libmpv
-- python3-imdbpy (for Older Mint and Debian releases get it from https://packages.ubuntu.com/focal/all/python3-imdbpy/download)
-- circle-flags (https://github.com/linuxmint/circle-flags)
-
-# TV Channels and media content
-
-Hypnotix does not provide content or TV channels, it is a player application which streams from IPTV providers.
-
-By default, Hypnotix is configured with one IPTV provider called Free-TV: https://github.com/Free-TV/IPTV.
-
-This provider was chosen because it satisfied the following criterias:
-
-- It only includes free, legal, publicly available content
-- It groups TV channels by countries
-- It doesn't include adult content
-
-Issues relating to TV channels and media content should be addressed directly to the relevant provider.
-
-Note: Feel free to remove Free-TV from Hypnotix if you don't use it, or add any other provider you may have access to or local M3U playlists.
-
-# Wayland compatibility
-
-If you're using Wayland go the Hypnotix preferences and add the following to the list of MPV options:
-
-`vo=x11`
-
-Run Hypnotix with:
-
-`GDK_BACKEND=x11 hypnotix`
+## Credits
+Based on the core logic of [Hypnotix](https://github.com/linuxmint/hypnotix) by Linux Mint.

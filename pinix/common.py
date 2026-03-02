@@ -4,18 +4,18 @@ import re
 import threading
 
 import requests
-from gi.repository import GLib, GObject
 
 # M3U parsing regex
 PARAMS = re.compile(r'(\S+)="(.*?)"')
 EXTINF = re.compile(r'^#EXTINF:(?P<duration>-?\d+?) ?(?P<params>.*),(?P<title>.*?)$')
 SERIES = re.compile(r"(?P<series>.*?) S(?P<season>.\d{1,2}).*E(?P<episode>.\d{1,2}.*)$", re.IGNORECASE)
 
-PROVIDERS_PATH = os.path.join(GLib.get_user_cache_dir(), "hypnotix", "providers")
+CACHE_DIR = os.path.join(os.getenv("LOCALAPPDATA") or os.path.expanduser("~"), "PiniX", "cache")
+PROVIDERS_PATH = os.path.join(CACHE_DIR, "providers")
 
 TV_GROUP, MOVIES_GROUP, SERIES_GROUP = range(3)
 
-FAVORITES_PATH = os.path.join(GLib.get_user_cache_dir(), "hypnotix", "favorites", "list")
+FAVORITES_PATH = os.path.join(CACHE_DIR, "favorites", "list")
 
 # Used as a decorator to run things in the background
 def async_function(func):
@@ -29,10 +29,10 @@ def async_function(func):
 
 
 # Used as a decorator to run things in the main loop, from another thread
+# (For PyQt, we will use Signals instead, so this is just a passthrough wrapper for now)
 def idle_function(func):
     def wrapper(*args):
-        GObject.idle_add(func, *args)
-
+        func(*args)
     return wrapper
 
 
@@ -133,7 +133,8 @@ class Channel:
 
 class Manager:
     def __init__(self, settings):
-        os.system("mkdir -p '%s'" % PROVIDERS_PATH)
+        os.makedirs(PROVIDERS_PATH, exist_ok=True)
+        os.makedirs(os.path.dirname(FAVORITES_PATH), exist_ok=True)
         self.verbose = False
         self.settings = settings
 

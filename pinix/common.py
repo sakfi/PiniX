@@ -302,9 +302,10 @@ class Manager:
 
     def load_favorites(self):
         favorites = []
-        with open(FAVORITES_PATH, 'r', encoding="utf-8", errors="ignore") as f:
-            for line in f:
-                favorites.append(line.strip())
+        if os.path.exists(FAVORITES_PATH):
+            with open(FAVORITES_PATH, 'r', encoding="utf-8", errors="ignore") as f:
+                for line in f:
+                    favorites.append(line.strip())
         return favorites
 
     def save_favorites(self, favorites):

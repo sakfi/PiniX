@@ -52,3 +52,18 @@ jobs:
       with:
         name: PiniX-Windows-Executable
         path: dist/PiniX.exe
+
+    - name: Get current date
+      id: date
+      run: echo "date=$(Get-Date -Format 'yyyyMMdd-HHmmss')" >> $env:GITHUB_OUTPUT
+
+    - name: Release to GitHub
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: "dev-build-${{ steps.date.outputs.date }}"
+        name: "Development Build ${{ steps.date.outputs.date }}"
+        files: dist/PiniX.exe
+        draft: false
+        prerelease: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

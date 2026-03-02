@@ -1,8 +1,8 @@
-# PiniX
-
+#
 <p align="center">
   <img src="pinix/assets/PiniX_logo.png" alt="PiniX Logo" />
 </p>
+#
 
 ## About PiniX
 PiniX is a dedicated, standalone IPTV streaming application designed explicitly for Windows desktop environments. It allows users to watch live TV broadcast, movies, and TV series by parsing modern IPTV provider APIs and M3U playlists into a sleek, fast, native graphical interface.

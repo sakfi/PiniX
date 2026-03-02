@@ -55,4 +55,4 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: PiniX-Windows-Executable
-        path: dist/PiniX/
+        path: dist/PiniX.exe

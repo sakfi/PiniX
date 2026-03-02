@@ -25,20 +25,61 @@ class PlayerWidget(QWidget):
         self.layout = QVBoxLayout(self)
         self.layout.setContentsMargins(0, 0, 0, 0)
         
+        # Video Container
+        self.video_container = QWidget()
+        self.video_layout = QVBoxLayout(self.video_container)
+        self.video_layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.addWidget(self.video_container, stretch=1)
+
+        # Controls Container
+        self.controls_container = QWidget()
+        self.controls_layout = QHBoxLayout(self.controls_container)
+        self.controls_layout.setContentsMargins(5, 5, 5, 5)
+        
+        self.btn_play_pause = QPushButton("Play/Pause")
+        self.btn_stop = QPushButton("Stop")
+        self.btn_fullscreen = QPushButton("Fullscreen")
+        
+        self.controls_layout.addWidget(self.btn_play_pause)
+        self.controls_layout.addWidget(self.btn_stop)
+        self.controls_layout.addWidget(self.btn_fullscreen)
+        self.layout.addWidget(self.controls_container)
+        
         if MPV_AVAILABLE:
-            self.setAttribute(Qt.WidgetAttribute.WA_DontCreateNativeAncestors)
-            self.setAttribute(Qt.WidgetAttribute.WA_NativeWindow)
+            self.video_container.setAttribute(Qt.WidgetAttribute.WA_DontCreateNativeAncestors)
+            self.video_container.setAttribute(Qt.WidgetAttribute.WA_NativeWindow)
             # Create mpv instance taking control of the HWND
-            self.player = mpv.MPV(wid=str(int(self.winId())), vo='gpu', hwdec='auto')
+            self.player = mpv.MPV(wid=str(int(self.video_container.winId())), vo='gpu', hwdec='auto')
+            
+            # Connect buttons
+            self.btn_play_pause.clicked.connect(self.toggle_play_pause)
+            self.btn_stop.clicked.connect(self.stop_playback)
+            self.btn_fullscreen.clicked.connect(self.toggle_fullscreen)
         else:
             self.player = None
             lbl = QLabel("MPV Library Not Found\nPlease download mpv lib for Windows and place it in the application folder.")
             lbl.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            self.layout.addWidget(lbl)
+            self.video_layout.addWidget(lbl)
 
     def play(self, url):
         if self.player:
             self.player.play(url)
+
+    def toggle_play_pause(self):
+        if self.player:
+            self.player.pause = not self.player.pause
+            
+    def stop_playback(self):
+        if self.player:
+            self.player.command('stop')
+            
+    def toggle_fullscreen(self):
+        # Fullscreen in embedded mpv on Windows requires resizing the parent QMainWindow
+        window = self.window()
+        if window.isFullScreen():
+            window.showNormal()
+        else:
+            window.showFullScreen()
 
 class MainWindow(QMainWindow):
     def __init__(self):

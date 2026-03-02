@@ -1,7 +1,7 @@
 # PiniX
 
 <p align="center">
-  <img src="pinix/assets/generic_tv_logo.png" alt="PiniX Logo" width="200" />
+  <img src="pinix/PiniX.png" alt="PiniX Logo" width="200" />
 </p>
 
 ## About PiniX

@@ -47,7 +47,9 @@ def slugify(string):
 class Provider:
     def __init__(self, name, provider_info):
         if provider_info is not None:
-            self.name, self.type_id, self.url, self.username, self.password, self.epg = provider_info.split(":::")
+            parts = provider_info.split(":::")
+            parts += [""] * (6 - len(parts))
+            self.name, self.type_id, self.url, self.username, self.password, self.epg = parts[:6]
         else:
             self.name = name
         self.path = os.path.join(PROVIDERS_PATH, slugify(self.name))

@@ -26,12 +26,12 @@ jobs:
         pip install -r requirements.txt
 
     - name: Download and Extract mpv-2.dll
+      shell: powershell
       run: |
-        # Download a pre-compiled Windows mpv dev build (7z format)
-        curl -L -o mpv-dev.7z https://github.com/shinchiro/mpv-winbuild-cmake/releases/download/20230630/mpv-dev-x86_64-20230630-git-521af58.7z
-        # Extract just the mpv-2.dll into the project root using 7z (available on windows-latest runner)
+        $DOWNLOAD_URL = (Invoke-RestMethod -Uri "https://api.github.com/repos/shinchiro/mpv-winbuild-cmake/releases/latest").assets | Where-Object { $_.name -match "mpv-dev-x86_64-v3" } | Select-Object -ExpandProperty browser_download_url
+        Write-Host "Downloading mpv from $DOWNLOAD_URL"
+        Invoke-WebRequest -Uri $DOWNLOAD_URL -OutFile "mpv-dev.7z"
         7z e mpv-dev.7z mpv-2.dll -r
-        
     - name: Build with PyInstaller
       run: |
         pyinstaller pinix.spec
